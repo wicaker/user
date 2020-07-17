@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS update_salt ON users 
