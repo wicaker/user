@@ -53,12 +53,12 @@ func (c *MqConfig) registerQueue() {
 		ExcType: rmq.TOPIC,
 	}
 
-	registerQueue := rmq.NewQueue("publish-user-register", c.AmqpConnection, exchange, []string{}, false, true)
-	c.Queue = append(c.Queue, registerQueue)
+	registerChannel := rmq.NewQueue("publish-user-register", c.AmqpConnection, exchange, []string{}, false, true)
+	c.Queue = append(c.Queue, registerChannel)
 
-	changePasswordQueue := rmq.NewQueue("publish-user-change-password", c.AmqpConnection, exchange, []string{}, false, true)
-	c.Queue = append(c.Queue, changePasswordQueue)
+	changePassworChannel := rmq.NewQueue("publish-user-change-password", c.AmqpConnection, exchange, []string{}, false, true)
+	c.Queue = append(c.Queue, changePassworChannel)
 
-	forgotPasswordQueue := rmq.NewQueue("publish-user-forgot-password", c.AmqpConnection, exchange, []string{}, false, true)
-	c.Queue = append(c.Queue, forgotPasswordQueue)
+	forgotPassworChannel := rmq.NewQueue("publish-user-forgot-password", c.AmqpConnection, exchange, []string{}, false, true)
+	c.Queue = append(c.Queue, forgotPassworChannel)
 }
