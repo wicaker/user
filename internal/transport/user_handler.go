@@ -82,7 +82,32 @@ func (uh *UserHandler) Register(c echo.Context) error {
 
 // Login will handle login request
 func (uh *UserHandler) Login(c echo.Context) error {
-	return nil
+	var user domain.User
+
+	err := c.Bind(&user)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, domain.Response{Message: err.Error()})
+	}
+
+	if ok, err := middleware.Validate(&user); !ok {
+		return c.JSON(http.StatusBadRequest, domain.Response{Message: "Validation error", Errors: err})
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	token, err := uh.UserUsecase.Login(ctx, &user)
+	if err != nil {
+		return c.JSON(domain.GetStatusCode(err), domain.Response{Message: err.Error()})
+	}
+
+	respData := map[string]interface{}{
+		"token": token,
+	}
+
+	return c.JSON(http.StatusOK, domain.Response{Message: "Login successfully", Data: respData})
 }
 
 // ChangeEmail will handle change email request
