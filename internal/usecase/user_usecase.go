@@ -56,18 +56,16 @@ func (u *userUsecase) Register(ctx context.Context, user *domain.User) (string, 
 		return "", errors.Wrap(err, "Password Encryption failed")
 	}
 
-	// sync data
-	user.Password = string(password)
-
 	// Save new user or update data
 	if checkUser == nil {
+		user.Password = string(password)
 		user, err = u.userRepo.Store(ctx, user)
 		if err != nil {
 			return "", errors.Wrap(err, "Store user data")
 		}
 	} else {
-		user.UUID = checkUser.UUID
-		user, err = u.userRepo.Update(ctx, user)
+		checkUser.Password = string(password)
+		user, err = u.userRepo.Update(ctx, checkUser)
 		if err != nil {
 			return "", errors.Wrap(err, "Update user data")
 		}
@@ -162,11 +160,9 @@ func (u *userUsecase) ChangeEmail(ctx context.Context, user *domain.User, token 
 		return domain.ErrWrongPassword
 	}
 
-	user.UUID = token.UUID
-	user.Password = checkUser.Password
-	user.IsActive = checkUser.IsActive
+	checkUser.Email = user.Email
 
-	_, err = u.userRepo.Update(ctx, user)
+	_, err = u.userRepo.Update(ctx, checkUser)
 	if err != nil {
 		return err
 	}
@@ -211,12 +207,9 @@ func (u *userUsecase) ChangePassword(ctx context.Context, user *domain.User, tok
 		return "", errors.Wrap(err, "Password Encryption failed")
 	}
 
-	user.UUID = checkUser.UUID
-	user.Password = checkUser.Password
-	user.IsActive = checkUser.IsActive
-	*user.NewPassword = string(newPassword)
+	*checkUser.NewPassword = string(newPassword)
 
-	user, err = u.userRepo.Update(ctx, user)
+	user, err = u.userRepo.Update(ctx, checkUser)
 	if err != nil {
 		return "", err
 	}
