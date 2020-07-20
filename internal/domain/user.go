@@ -31,10 +31,10 @@ type UserRepository interface {
 type UserUsecase interface {
 	Register(ctx context.Context, user *User) (token string, err error)
 	Login(ctx context.Context, user *User) (token string, err error)
-	ChangeEmail(ctx context.Context, user *User, token JWToken) error
-	Activation(ctx context.Context, token JWToken) error
-	ChangePassword(ctx context.Context, user *User, token JWToken) (tokenConfirmation string, err error)
-	PasswordConfirm(ctx context.Context, token JWToken) error
+	ChangeEmail(ctx context.Context, user *User, parsedToken JWToken) error
+	Activation(ctx context.Context, parsedToken JWToken) error
+	ChangePassword(ctx context.Context, user *User, parsedToken JWToken) (tokenConfirmation string, err error)
+	PasswordConfirm(ctx context.Context, parsedToken JWToken) error
 	ForgotPasswordRequest(ctx context.Context, email string) (token string, err error)
-	ForgotPasswordConfirm(ctx context.Context, user *User, token JWToken) error
+	ForgotPasswordConfirm(ctx context.Context, user *User, parsedToken JWToken) error
 }

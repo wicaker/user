@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"time"
 
@@ -139,13 +138,13 @@ func (u *userUsecase) Login(ctx context.Context, user *domain.User) (string, err
  * - if match, do sync data
  * - update
  */
-func (u *userUsecase) ChangeEmail(ctx context.Context, user *domain.User, token domain.JWToken) error {
+func (u *userUsecase) ChangeEmail(ctx context.Context, user *domain.User, parsedToken domain.JWToken) error {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeout)
 	defer cancel()
 
 	checkUser, err := u.userRepo.FindOneBy(ctx, map[string]interface{}{
-		"uuid":      token.UUID,
-		"email":     token.Email,
+		"uuid":      parsedToken.UUID,
+		"email":     parsedToken.Email,
 		"is_active": true,
 	}, nil)
 	if err != nil {
@@ -180,13 +179,13 @@ func (u *userUsecase) ChangeEmail(ctx context.Context, user *domain.User, token 
  * - update
  * - create token as a key for change password confirmation
  */
-func (u *userUsecase) ChangePassword(ctx context.Context, user *domain.User, token domain.JWToken) (string, error) {
+func (u *userUsecase) ChangePassword(ctx context.Context, user *domain.User, parsedToken domain.JWToken) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeout)
 	defer cancel()
 
 	checkUser, err := u.userRepo.FindOneBy(ctx, map[string]interface{}{
-		"uuid":      token.UUID,
-		"email":     token.Email,
+		"uuid":      parsedToken.UUID,
+		"email":     parsedToken.Email,
 		"is_active": true,
 	}, nil)
 	if err != nil {
@@ -236,14 +235,14 @@ func (u *userUsecase) ChangePassword(ctx context.Context, user *domain.User, tok
  * - if match, do sync data
  * - update
  */
-func (u *userUsecase) Activation(ctx context.Context, token domain.JWToken) error {
+func (u *userUsecase) Activation(ctx context.Context, parsedToken domain.JWToken) error {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeout)
 	defer cancel()
 
 	checkUser, err := u.userRepo.FindOneBy(ctx, map[string]interface{}{
-		"uuid":      token.UUID,
-		"email":     token.Email,
-		"salt":      token.Salt,
+		"uuid":      parsedToken.UUID,
+		"email":     parsedToken.Email,
+		"salt":      parsedToken.Salt,
 		"is_active": false,
 	}, nil)
 	if err != nil {
@@ -270,14 +269,14 @@ func (u *userUsecase) Activation(ctx context.Context, token domain.JWToken) erro
  * - if match, do sync data (password= new_password)
  * - update
  */
-func (u *userUsecase) PasswordConfirm(ctx context.Context, token domain.JWToken) error {
+func (u *userUsecase) PasswordConfirm(ctx context.Context, parsedToken domain.JWToken) error {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeout)
 	defer cancel()
 
 	checkUser, err := u.userRepo.FindOneBy(ctx, map[string]interface{}{
-		"uuid":      token.UUID,
-		"email":     token.Email,
-		"salt":      token.Salt,
+		"uuid":      parsedToken.UUID,
+		"email":     parsedToken.Email,
+		"salt":      parsedToken.Salt,
 		"is_active": true,
 	}, nil)
 	if err != nil {
@@ -340,15 +339,14 @@ func (u *userUsecase) ForgotPasswordRequest(ctx context.Context, email string) (
  * - if match, sync data
  * - update new data or password
  */
-func (u *userUsecase) ForgotPasswordConfirm(ctx context.Context, user *domain.User, token domain.JWToken) error {
+func (u *userUsecase) ForgotPasswordConfirm(ctx context.Context, user *domain.User, parsedToken domain.JWToken) error {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeout)
 	defer cancel()
 
-	fmt.Println(token.Salt)
 	checkUser, err := u.userRepo.FindOneBy(ctx, map[string]interface{}{
-		"uuid":      token.UUID,
-		"email":     token.Email,
-		"salt":      token.Salt,
+		"uuid":      parsedToken.UUID,
+		"email":     parsedToken.Email,
+		"salt":      parsedToken.Salt,
 		"is_active": true,
 	}, nil)
 	if err != nil {

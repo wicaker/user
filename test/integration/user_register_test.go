@@ -60,11 +60,11 @@ func TestRegisterHandlerSuccess(t *testing.T) {
 		assert.NotEmpty(t, usr.Salt)
 
 		msg := getMessageInMq()
-		token, err := middleware.JwtVerify(msg.Token)
+		parsedToken, err := middleware.JwtVerify(msg.Token)
 		assert.NoError(t, err)
 		assert.Equal(t, "register1@mail.com", msg.EmailDestination)
-		assert.Equal(t, usr.Salt, token.Salt)
-		assert.NotEmpty(t, token.UUID)
+		assert.Equal(t, usr.Salt, parsedToken.Salt)
+		assert.NotEmpty(t, parsedToken.UUID)
 	})
 
 	t.Run("success, because user still inactive", func(t *testing.T) {
@@ -97,11 +97,11 @@ func TestRegisterHandlerSuccess(t *testing.T) {
 		mockUser.UUID = usr.UUID
 
 		msg := getMessageInMq()
-		token, err := middleware.JwtVerify(msg.Token)
+		parsedToken, err := middleware.JwtVerify(msg.Token)
 		assert.NoError(t, err)
 		assert.Equal(t, "register1@mail.com", msg.EmailDestination)
-		assert.Equal(t, usr.Salt, token.Salt)
-		assert.NotEmpty(t, token.UUID)
+		assert.Equal(t, usr.Salt, parsedToken.Salt)
+		assert.NotEmpty(t, parsedToken.UUID)
 	})
 }
 
