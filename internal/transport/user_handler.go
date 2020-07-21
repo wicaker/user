@@ -40,12 +40,12 @@ func NewUserHandler(e *echo.Echo, rmqQueue []rmq.Queue, u domain.UserUsecase) {
 
 	e.POST("/user/register", handler.Register)
 	e.POST("/user/login", handler.Login)
-	e.PUT("/user/activation/:key", handler.Activation)
+	e.PUT("/user/activation/:token", handler.Activation)
 	e.PUT("/user/email", handler.ChangeEmail)
 	e.PUT("/user/password/change", handler.ChangePassword)
-	e.PUT("/user/password/change/:key", handler.PasswordConfirm)
+	e.PUT("/user/password/change/:token", handler.PasswordConfirm)
 	e.PUT("/user/password/forgot", handler.ForgotPasswordRequest)
-	e.PUT("/user/password/forgot/:key", handler.ForgotPasswordConfirm)
+	e.PUT("/user/password/forgot/:token", handler.ForgotPasswordConfirm)
 }
 
 // Register will handle register request
@@ -110,6 +110,28 @@ func (uh *UserHandler) Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, domain.Response{Message: "Login successfully", Data: respData})
 }
 
+// Activation will handle activation request for user first time register
+func (uh *UserHandler) Activation(c echo.Context) error {
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	// get token
+	token := c.Param("token")
+	parsedToken, err := middleware.JwtVerify(token)
+	if err != nil {
+		return c.JSON(domain.GetStatusCode(err), domain.Response{Message: err.Error()})
+	}
+
+	err = uh.UserUsecase.Activation(ctx, *parsedToken)
+	if err != nil {
+		return c.JSON(domain.GetStatusCode(err), domain.Response{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusNoContent, domain.Response{Message: "Activation request successfully"})
+}
+
 // ChangeEmail will handle change email request
 func (uh *UserHandler) ChangeEmail(c echo.Context) error {
 	return nil
@@ -122,11 +144,6 @@ func (uh *UserHandler) ChangePassword(c echo.Context) error {
 
 // PasswordConfirm will handle confirmation of change password request
 func (uh *UserHandler) PasswordConfirm(c echo.Context) error {
-	return nil
-}
-
-// Activation will handle activation request for user first time register
-func (uh *UserHandler) Activation(c echo.Context) error {
 	return nil
 }
 
