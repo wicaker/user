@@ -134,7 +134,35 @@ func (uh *UserHandler) Activation(c echo.Context) error {
 
 // ChangeEmail will handle change email request
 func (uh *UserHandler) ChangeEmail(c echo.Context) error {
-	return nil
+	var user domain.User
+
+	err := c.Bind(&user)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, domain.Response{Message: err.Error()})
+	}
+
+	if ok, err := middleware.Validate(&user); !ok {
+		return c.JSON(http.StatusBadRequest, domain.Response{Message: "Validation error", Errors: err})
+	}
+
+	// get token
+	token := c.Request().Header.Get("x-access-token")
+	parsedToken, err := middleware.JwtVerify(token)
+	if err != nil {
+		return c.JSON(domain.GetStatusCode(err), domain.Response{Message: err.Error()})
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	err = uh.UserUsecase.ChangeEmail(ctx, &user, *parsedToken)
+	if err != nil {
+		return c.JSON(domain.GetStatusCode(err), domain.Response{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusNoContent, domain.Response{Message: "Successfully register new user"})
 }
 
 // ChangePassword will handle change password request
