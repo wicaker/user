@@ -260,5 +260,33 @@ func (uh *UserHandler) ForgotPasswordRequest(c echo.Context) error {
 
 // ForgotPasswordConfirm will handle forgot password request
 func (uh *UserHandler) ForgotPasswordConfirm(c echo.Context) error {
-	return nil
+	var user domain.User
+
+	err := c.Bind(&user)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, domain.Response{Message: err.Error()})
+	}
+
+	if user.NewPassword == nil || *user.NewPassword == "" {
+		return c.JSON(http.StatusBadRequest, domain.Response{Message: "new_password required and not empty"})
+	}
+
+	// get token
+	token := c.Param("token")
+	parsedToken, err := middleware.JwtVerify(token)
+	if err != nil {
+		return c.JSON(domain.GetStatusCode(err), domain.Response{Message: err.Error()})
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	err = uh.UserUsecase.ForgotPasswordConfirm(ctx, &user, *parsedToken)
+	if err != nil {
+		return c.JSON(domain.GetStatusCode(err), domain.Response{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusNoContent, domain.Response{Message: "Successfully register new user"})
 }
