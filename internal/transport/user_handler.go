@@ -210,7 +210,24 @@ func (uh *UserHandler) ChangePassword(c echo.Context) error {
 
 // PasswordConfirm will handle confirmation of change password request
 func (uh *UserHandler) PasswordConfirm(c echo.Context) error {
-	return nil
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	// get token
+	token := c.Param("token")
+	parsedToken, err := middleware.JwtVerify(token)
+	if err != nil {
+		return c.JSON(domain.GetStatusCode(err), domain.Response{Message: err.Error()})
+	}
+
+	err = uh.UserUsecase.PasswordConfirm(ctx, *parsedToken)
+	if err != nil {
+		return c.JSON(domain.GetStatusCode(err), domain.Response{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusNoContent, domain.Response{Message: "Successfully confirm new password."})
 }
 
 // ForgotPasswordRequest will handle forgot password request
