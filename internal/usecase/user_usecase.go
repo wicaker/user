@@ -206,7 +206,8 @@ func (u *userUsecase) ChangePassword(ctx context.Context, user *domain.User, par
 		return "", errors.Wrap(err, "Password Encryption failed")
 	}
 
-	*checkUser.NewPassword = string(newPassword)
+	newPass := string(newPassword)
+	checkUser.NewPassword = &newPass
 
 	user, err = u.userRepo.Update(ctx, checkUser)
 	if err != nil {
