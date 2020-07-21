@@ -232,7 +232,30 @@ func (uh *UserHandler) PasswordConfirm(c echo.Context) error {
 
 // ForgotPasswordRequest will handle forgot password request
 func (uh *UserHandler) ForgotPasswordRequest(c echo.Context) error {
-	return nil
+	var user domain.User
+
+	err := c.Bind(&user)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, domain.Response{Message: err.Error()})
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	tokenConfirm, err := uh.UserUsecase.ForgotPasswordRequest(ctx, user.Email)
+	if err != nil {
+		return c.JSON(domain.GetStatusCode(err), domain.Response{Message: err.Error()})
+	}
+
+	rabbitMessage := fmt.Sprintf(`{"email_destination":"%s","token":"%s"}`, user.Email, tokenConfirm)
+	err = uh.queuePublishForgotPassword.Publish(rabbitMessage, "user.forgot_password", make(map[string]interface{}))
+	if err != nil {
+		log.Println(err)
+	}
+
+	return c.JSON(http.StatusNoContent, domain.Response{Message: "Please confirm forgot password request through your email address!"})
 }
 
 // ForgotPasswordConfirm will handle forgot password request
