@@ -167,7 +167,45 @@ func (uh *UserHandler) ChangeEmail(c echo.Context) error {
 
 // ChangePassword will handle change password request
 func (uh *UserHandler) ChangePassword(c echo.Context) error {
-	return nil
+	var user domain.User
+
+	err := c.Bind(&user)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, domain.Response{Message: err.Error()})
+	}
+
+	if ok, err := middleware.Validate(&user); !ok {
+		return c.JSON(http.StatusBadRequest, domain.Response{Message: "Validation error", Errors: err})
+	}
+
+	if user.NewPassword == nil || *user.NewPassword == "" {
+		return c.JSON(http.StatusBadRequest, domain.Response{Message: "new_password required and not empty"})
+	}
+
+	// get token
+	tokenHeader := c.Request().Header.Get("x-access-token")
+	parsedToken, err := middleware.JwtVerify(tokenHeader)
+	if err != nil {
+		return c.JSON(domain.GetStatusCode(err), domain.Response{Message: err.Error()})
+	}
+
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	token, err := uh.UserUsecase.ChangePassword(ctx, &user, *parsedToken)
+	if err != nil {
+		return c.JSON(domain.GetStatusCode(err), domain.Response{Message: err.Error()})
+	}
+
+	rabbitMessage := fmt.Sprintf(`{"email_destination":"%s","token":"%s"}`, user.Email, token)
+	err = uh.queuePublishChangePassword.Publish(rabbitMessage, "user.change_password", make(map[string]interface{}))
+	if err != nil {
+		log.Println(err)
+	}
+
+	return c.JSON(http.StatusNoContent, domain.Response{Message: "Successfully change password. Please confirm through your email address! "})
 }
 
 // PasswordConfirm will handle confirmation of change password request
