@@ -9,7 +9,7 @@ import (
 	"github.com/wicaker/user/internal/usecase"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 // Echo server

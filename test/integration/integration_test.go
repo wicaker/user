@@ -12,7 +12,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/golang-migrate/migrate"
 	"github.com/jmoiron/sqlx"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 
 	"github.com/wicaker/user/config"
 	"github.com/wicaker/user/internal/domain"
