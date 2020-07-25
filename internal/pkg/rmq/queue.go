@@ -44,7 +44,7 @@ func NewQueue(
 	q.routingKey = routingKey
 	q.channel = q.openChannel()
 
-	if isForPublish && !isForConsume {
+	if isForConsume {
 		q.declareExchange()
 		q.declareQueue()
 		q.bindQueue()
