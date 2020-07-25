@@ -32,11 +32,10 @@ func NewRabbitmq() *MqConfig {
 }
 
 // Close to close amqp connection
-func (c *MqConfig) Close() {
-	log.Println("Closing connection")
+func (c *MqConfig) Close() error {
+	log.Println("closing rabbitmq connection...")
 	c.IsClose = true
-	err := c.AmqpConnection.Close()
-	logError("Error close connection... ", err)
+	return c.AmqpConnection.Close()
 }
 
 // Reconnect to reconnecting connection
@@ -45,6 +44,7 @@ func (c *MqConfig) Reconnect(err error) {
 	c.AmqpConnection = c.rmqConn.Dial()
 	c.ErrorChannel = c.rmqConn.ErrorChannel(c.AmqpConnection)
 	c.rmqConn.NotifyClose(c.AmqpConnection, c.ErrorChannel)
+	c.registerQueue()
 }
 
 func (c *MqConfig) registerQueue() {
