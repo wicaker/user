@@ -47,5 +47,6 @@ services:
       RABBITMQ_SERVER: amqp://guest:guest@rabbitmq/
       DATABASE_URL: postgres://root:root@localhost:5432/microservice_user?sslmode=disable
       SERVER_ECHO_PORT: 9090
+      JWT_SECRET: your_secret
     networks:
       - user-test
