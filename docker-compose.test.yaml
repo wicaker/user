@@ -1,0 +1,51 @@
+version: "3"
+
+networks:
+  user-test:
+    driver: bridge
+
+services:
+  db:
+    image: postgres:11.1
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: microservice_user
+    restart: on-failure
+    networks:
+      - user-test
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    volumes:
+      - ./.docker/rabbitmq/etc/:/etc/rabbitmq/
+      - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/
+      - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
+    environment:
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - user-test
+  user-test:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.test
+    volumes:
+      - $PWD:/go/src/github.com/wicaker/user
+    depends_on:
+      - rabbitmq
+      - db
+    environment:
+      RABBITMQ_SERVER: amqp://guest:guest@rabbitmq/
+      DATABASE_URL: postgres://root:root@localhost:5432/microservice_user?sslmode=disable
+      SERVER_ECHO_PORT: 9090
+    networks:
+      - user-test
