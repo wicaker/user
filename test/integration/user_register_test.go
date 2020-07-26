@@ -59,6 +59,7 @@ func TestRegisterHandlerSuccess(t *testing.T) {
 		assert.False(t, usr.IsActive)
 		assert.NotEmpty(t, usr.Salt)
 
+		assert.Equal(t, "user.register", publishedMessage.RoutingKey)
 		msg := getMessageInMq()
 		parsedToken, err := middleware.JwtVerify(msg.Token)
 		assert.NoError(t, err)
@@ -96,6 +97,7 @@ func TestRegisterHandlerSuccess(t *testing.T) {
 		assert.NotEmpty(t, usr.Salt)
 		mockUser.UUID = usr.UUID
 
+		assert.Equal(t, "user.register", publishedMessage.RoutingKey)
 		msg := getMessageInMq()
 		parsedToken, err := middleware.JwtVerify(msg.Token)
 		assert.NoError(t, err)

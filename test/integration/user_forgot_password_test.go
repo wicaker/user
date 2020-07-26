@@ -113,6 +113,7 @@ func TestForgotPasswordSuccess(t *testing.T) {
 	assert.NotEmpty(t, resp.Message)
 	assert.Equal(t, http.StatusNoContent, w.Result().StatusCode)
 
+	assert.Equal(t, "user.forgot_password", publishedMessage.RoutingKey)
 	msg := getMessageInMq()
 	parsedToken, err := middleware.JwtVerify(msg.Token)
 	assert.NoError(t, err)

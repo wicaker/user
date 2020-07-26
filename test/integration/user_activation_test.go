@@ -38,6 +38,7 @@ func TestActivationHandler(t *testing.T) {
 		w := httptest.NewRecorder()
 		api.ServeHTTP(w, req)
 
+		assert.Equal(t, "user.register", publishedMessage.RoutingKey)
 		msg = getMessageInMq()
 		assert.Equal(t, "testactivation@mail.com", msg.EmailDestination)
 		assert.NotEmpty(t, msg.Token)

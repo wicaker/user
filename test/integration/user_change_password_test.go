@@ -286,6 +286,7 @@ func TestUserChangePasswordSuccess(t *testing.T) {
 	assert.Equal(t, usr.Email, userNew.Email)
 	assert.NotEmpty(t, usr.NewPassword)
 
+	assert.Equal(t, "user.change_password", publishedMessage.RoutingKey)
 	msg := getMessageInMq()
 	token, err := middleware.JwtVerify(msg.Token)
 	assert.NoError(t, err)
